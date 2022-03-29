@@ -1,5 +1,6 @@
 <html>
 <head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js" integrity="sha512-EAKzSKex+PXC0U9OG13r1059ysjrjkJEpZoONCnZa0mBROY28iBOOxZSErUVw1LzLr2+U5PhR7zPCPKidUVJqg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.26.1/axios.min.js" integrity="sha512-bPh3uwgU5qEMipS/VOmRqynnMXGGSRv+72H/N260MQeXZIK4PG48401Bsby9Nq5P5fz7hy5UGNmC/W1Z51h2GQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.9.1/lottie.min.js" integrity="sha512-CWKGqmXoxo+9RjazbVIaiFcD+bYEIcUbBHwEzPlT0FilQq3TCUac+/uxZ5KDmvYiXJvp32O8rcgchkYw6J6zOA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
@@ -35,45 +36,52 @@ html {
     var currentLayerNum = -1;
     var currentPos = [960, 540, -2666.667];
     var mousePos = [960, 540, -2666.667];
-
+    var container = document.getElementById('bodymovin')
     axios({
-        url: 'https://parallax.cryptspad.io/test.json',
+        url: 'https://parallax.cryptspad.io/gztest.json.gz',
         method: 'GET',
-        responseType: 'application/json'
+        responseType: 'blob'
     })
     .then((response) => {
-        animationData = response.data
-        anim = bodymovin.loadAnimation({
-            container: document.getElementById('bodymovin'),
-            renderer: 'html',
-            loop: true,
-            autoplay: true,
-            rendererSettings: {
-                progressiveLoad: false,
-            },
-            animationData,
-        });
-        anim.addEventListener('DOMLoaded', function(){
-
-            moveCamera();
-
-            window.addEventListener('mousemove', function(ev){
-
-                mouseCoords.x = ev.clientX || ev.pageX;
-                mouseCoords.y = ev.clientY || ev.pageY;
-                theta = Math.atan2(
-                    windowH/2 - mouseCoords.y,
-                    windowW/2 - mouseCoords.x
-                );
-
-                dist = 2 * Math.sqrt(Math.pow(mouseCoords.x - windowW/2, 2) + Math.pow(mouseCoords.y - windowH/2, 2));
-                mousePos[0] = 960 + Math.cos(theta)*dist;
-                mousePos[1] = 540 + Math.sin(theta)*dist;
-            })
+        gzanimationData = response.data
+        gzanimationData.arrayBuffer()
+        .then(buf => {
+          animationData = JSON.parse(pako.ungzip(new Uint8Array(buf), { to: 'string' }))
+          console.log(typeof(animationData))
+          initAnimation()
         })
     })
 
+    function initAnimation() {
+      anim = bodymovin.loadAnimation({
+          container,
+          renderer: 'html',
+          loop: true,
+          autoplay: true,
+          rendererSettings: {
+              progressiveLoad: false,
+          },
+          animationData,
+      });
+      anim.addEventListener('DOMLoaded', function(){
 
+          moveCamera();
+
+          window.addEventListener('mousemove', function(ev){
+
+              mouseCoords.x = ev.clientX || ev.pageX;
+              mouseCoords.y = ev.clientY || ev.pageY;
+              theta = Math.atan2(
+                  windowH/2 - mouseCoords.y,
+                  windowW/2 - mouseCoords.x
+              );
+
+              dist = 2 * Math.sqrt(Math.pow(mouseCoords.x - windowW/2, 2) + Math.pow(mouseCoords.y - windowH/2, 2));
+              mousePos[0] = 960 + Math.cos(theta)*dist;
+              mousePos[1] = 540 + Math.sin(theta)*dist;
+          })
+      })
+    }
     function moveCamera(){
         currentPos[0] = currentPos[0] + (mousePos[0] - currentPos[0])*0.2;
         currentPos[1] = currentPos[1] + (mousePos[1] - currentPos[1])*0.25;
@@ -98,5 +106,16 @@ html {
     }
 
     calculateSize();
+
+    function blobToArrayBuffer(blob) {
+        console.log('blob', blob)
+        var arrayBuffer;
+        var fileReader = new FileReader();
+        fileReader.onload = function(event) {
+            arrayBuffer = event.target.result;
+        };
+        fileReader.readAsArrayBuffer(blob);
+        return fileReader.result; // also accessible this way once the blob has been read
+    }
 </script>
 </html>
