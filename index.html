@@ -1,121 +1,103 @@
 <html>
-<head>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js" integrity="sha512-EAKzSKex+PXC0U9OG13r1059ysjrjkJEpZoONCnZa0mBROY28iBOOxZSErUVw1LzLr2+U5PhR7zPCPKidUVJqg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.26.1/axios.min.js" integrity="sha512-bPh3uwgU5qEMipS/VOmRqynnMXGGSRv+72H/N260MQeXZIK4PG48401Bsby9Nq5P5fz7hy5UGNmC/W1Z51h2GQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.9.1/lottie.min.js" integrity="sha512-CWKGqmXoxo+9RjazbVIaiFcD+bYEIcUbBHwEzPlT0FilQq3TCUac+/uxZ5KDmvYiXJvp32O8rcgchkYw6J6zOA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-</head>
-<style>
-  body,
-html {
-  background-color: #ddd;
-  margin: 0px;
-  height: 100%;
-  overflow: hidden;
-}
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js" integrity="sha512-EAKzSKex+PXC0U9OG13r1059ysjrjkJEpZoONCnZa0mBROY28iBOOxZSErUVw1LzLr2+U5PhR7zPCPKidUVJqg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.26.1/axios.min.js" integrity="sha512-bPh3uwgU5qEMipS/VOmRqynnMXGGSRv+72H/N260MQeXZIK4PG48401Bsby9Nq5P5fz7hy5UGNmC/W1Z51h2GQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.9.1/lottie.min.js" integrity="sha512-CWKGqmXoxo+9RjazbVIaiFcD+bYEIcUbBHwEzPlT0FilQq3TCUac+/uxZ5KDmvYiXJvp32O8rcgchkYw6J6zOA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  </head>
+  <style>
+    body,
+  html {
+    background-color: #ddd;
+    margin: 0px;
+    height: 100%;
+    overflow: hidden;
+  }
 
-#bodymovin {
-  background-color: #000;
-  width: 100%;
-  height: 100%;
-  display: block;
-  transform: translate3d(0, 0, 0);
-  margin: auto;
-}
-</style>
-<body>
-  <div id="bodymovin"></div>
-</body>
-<script>
-    var animationData = null;
-    var anim;
-    var windowW, windowH, dist;
-    var mouseCoords = {
-        x:0,
-        y:0
-    }
-    var currentLayerNum = -1;
-    var currentPos = [960, 540, -2666.667];
-    var mousePos = [960, 540, -2666.667];
-    var container = document.getElementById('bodymovin')
-    axios({
-        url: 'https://parallax.cryptspad.io/gztest.json.gz',
-        method: 'GET',
-        responseType: 'blob'
-    })
-    .then((response) => {
-        gzanimationData = response.data
-        gzanimationData.arrayBuffer()
-        .then(buf => {
-          animationData = JSON.parse(pako.ungzip(new Uint8Array(buf), { to: 'string' }))
-          console.log(typeof(animationData))
-          initAnimation()
-        })
-    })
-
-    function initAnimation() {
-      anim = bodymovin.loadAnimation({
-          container,
-          renderer: 'html',
-          loop: true,
-          autoplay: true,
-          rendererSettings: {
-              progressiveLoad: false,
-          },
-          animationData,
-      });
-      anim.addEventListener('DOMLoaded', function(){
-
-          moveCamera();
-
-          window.addEventListener('mousemove', function(ev){
-
-              mouseCoords.x = ev.clientX || ev.pageX;
-              mouseCoords.y = ev.clientY || ev.pageY;
-              theta = Math.atan2(
-                  windowH/2 - mouseCoords.y,
-                  windowW/2 - mouseCoords.x
-              );
-
-              dist = 2 * Math.sqrt(Math.pow(mouseCoords.x - windowW/2, 2) + Math.pow(mouseCoords.y - windowH/2, 2));
-              mousePos[0] = 960 + Math.cos(theta)*dist;
-              mousePos[1] = 540 + Math.sin(theta)*dist;
+  #bodymovin {
+    background-color: #000;
+    width: 100%;
+    height: 100%;
+    display: block;
+    transform: translate3d(0, 0, 0);
+    margin: auto;
+  }
+  </style>
+  <body>
+    <div id="bodymovin"></div>
+  </body>
+  <script>
+      var animationData = null;
+      var anim;
+      var windowW, windowH, dist;
+      var mouseCoords = {
+          x:0,
+          y:0
+      }
+      var currentLayerNum = -1;
+      var currentPos = [960, 540, -2666.667];
+      var mousePos = [960, 540, -2666.667];
+      var container = document.getElementById('bodymovin')
+      axios({
+          url: 'https://parallax.cryptspad.io/gztest.json.gz',
+          method: 'GET',
+          responseType: 'blob'
+      })
+      .then((response) => {
+          gzanimationData = response.data
+          gzanimationData.arrayBuffer()
+          .then(buf => {
+            animationData = JSON.parse(pako.ungzip(new Uint8Array(buf), { to: 'string' }))
+            console.log(typeof(animationData))
+            initAnimation()
           })
       })
-    }
-    function moveCamera(){
-        currentPos[0] = currentPos[0] + (mousePos[0] - currentPos[0])*0.2;
-        currentPos[1] = currentPos[1] + (mousePos[1] - currentPos[1])*0.25;
-        currentPos[2] = currentPos[2] + (mousePos[2] - currentPos[2])*0.25;		//0.01 es la sensibilidad
-        //alert(anim.animationData.layers[0].ks.p.k[0]);
-      /*anim.animationData.layers[0].ks.p.k[0] = anim.animationData.layers[0].ks.p.k[0] + 1;
-      anim.animationData.layers[0].ks.p.k[1] = anim.animationData.layers[0].ks.p.k[1] + 1;
-      anim.animationData.layers[0].ks.p.k[2] = anim.animationData.layers[0].ks.p.k[2] + 1;*/
-        anim.animationData.layers[0].ks.p.k[0].s[0] = currentPos[0];
-        anim.animationData.layers[0].ks.p.k[0].e[0] = currentPos[0];
-        anim.animationData.layers[0].ks.p.k[0].s[1] = currentPos[1];
-        anim.animationData.layers[0].ks.p.k[0].e[1] = currentPos[1];
-        anim.animationData.layers[0].ks.p.k[0].s[2] = currentPos[2];
-        anim.animationData.layers[0].ks.p.k[0].e[2] = currentPos[2];
-      //console.log(anim.animationData.layers[0]);
-        requestAnimationFrame(moveCamera);
-    }
 
-    function calculateSize(){
-        windowW = window.innerWidth;
-        windowH = window.innerHeight;
-    }
+      function initAnimation() {
+        anim = bodymovin.loadAnimation({
+            container,
+            renderer: 'html',
+            loop: true,
+            autoplay: true,
+            rendererSettings: {
+                progressiveLoad: false,
+            },
+            animationData,
+        });
+        anim.addEventListener('DOMLoaded', function(){
 
-    calculateSize();
+            moveCamera();
+            window.addEventListener('mousemove', function(ev){
+                mouseCoords.x = ev.clientX || ev.pageX;
+                mouseCoords.y = ev.clientY || ev.pageY;
+                theta = Math.atan2(
+                    windowH/2 - mouseCoords.y,
+                    windowW/2 - mouseCoords.x
+                );
 
-    function blobToArrayBuffer(blob) {
-        console.log('blob', blob)
-        var arrayBuffer;
-        var fileReader = new FileReader();
-        fileReader.onload = function(event) {
-            arrayBuffer = event.target.result;
-        };
-        fileReader.readAsArrayBuffer(blob);
-        return fileReader.result; // also accessible this way once the blob has been read
-    }
-</script>
+                dist = 2 * Math.sqrt(Math.pow(mouseCoords.x - windowW/2, 2) + Math.pow(mouseCoords.y - windowH/2, 2));
+                mousePos[0] = 960 + Math.cos(theta)*dist;
+                mousePos[1] = 540 + Math.sin(theta)*dist;
+            })
+        })
+      }
+      function moveCamera(){
+          currentPos[0] = currentPos[0] + (mousePos[0] - currentPos[0])*0.25;
+          currentPos[1] = currentPos[1] + (mousePos[1] - currentPos[1])*0.25;
+          currentPos[2] = currentPos[2] + (mousePos[2] - currentPos[2])*0.25;
+          anim.animationData.layers[0].ks.p.k[0].s[0] = currentPos[0];
+          anim.animationData.layers[0].ks.p.k[0].e[0] = currentPos[0];
+          anim.animationData.layers[0].ks.p.k[0].s[1] = currentPos[1];
+          anim.animationData.layers[0].ks.p.k[0].e[1] = currentPos[1];
+          anim.animationData.layers[0].ks.p.k[0].s[2] = currentPos[2];
+          anim.animationData.layers[0].ks.p.k[0].e[2] = currentPos[2];
+          requestAnimationFrame(moveCamera);
+      }
+
+      function calculateSize(){
+          windowW = window.innerWidth;
+          windowH = window.innerHeight;
+      }
+
+      calculateSize();
+  </script>
 </html>
