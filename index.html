@@ -1,5 +1,6 @@
 <html>
 <head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.26.1/axios.min.js" integrity="sha512-bPh3uwgU5qEMipS/VOmRqynnMXGGSRv+72H/N260MQeXZIK4PG48401Bsby9Nq5P5fz7hy5UGNmC/W1Z51h2GQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.9.1/lottie.min.js" integrity="sha512-CWKGqmXoxo+9RjazbVIaiFcD+bYEIcUbBHwEzPlT0FilQq3TCUac+/uxZ5KDmvYiXJvp32O8rcgchkYw6J6zOA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <style>
@@ -24,30 +25,54 @@ html {
   <div id="bodymovin"></div>
 </body>
 <script>
-    var animData = null;
-    console.log(animData)
+    var animationData = null;
     var anim;
-    var elem = document.getElementById('bodymovin')
-    var animationParams = {
-        container: elem,
-        renderer: 'html',
-        loop: true,
-        autoplay: true,
-        rendererSettings: {
-            progressiveLoad:false
-        },
-        animationData: animData
-    };
-    anim = bodymovin.loadAnimation(animationParams);
-    var lockeds = {
-        2: false,
-        3: false,
-        4: false,
-        5: false
+    var windowW, windowH, dist;
+    var mouseCoords = {
+        x:0,
+        y:0
     }
     var currentLayerNum = -1;
     var currentPos = [960, 540, -2666.667];
     var mousePos = [960, 540, -2666.667];
+
+    axios({
+        url: 'https://parallax.cryptspad.io/test.json',
+        method: 'GET',
+        responseType: 'application/json'
+    })
+    .then((response) => {
+        animationData = response.data
+        anim = bodymovin.loadAnimation({
+            container: document.getElementById('bodymovin'),
+            renderer: 'html',
+            loop: true,
+            autoplay: true,
+            rendererSettings: {
+                progressiveLoad: false,
+            },
+            animationData,
+        });
+        anim.addEventListener('DOMLoaded', function(){
+
+            moveCamera();
+
+            window.addEventListener('mousemove', function(ev){
+
+                mouseCoords.x = ev.clientX || ev.pageX;
+                mouseCoords.y = ev.clientY || ev.pageY;
+                theta = Math.atan2(
+                    windowH/2 - mouseCoords.y,
+                    windowW/2 - mouseCoords.x
+                );
+
+                dist = 2 * Math.sqrt(Math.pow(mouseCoords.x - windowW/2, 2) + Math.pow(mouseCoords.y - windowH/2, 2));
+                mousePos[0] = 960 + Math.cos(theta)*dist;
+                mousePos[1] = 540 + Math.sin(theta)*dist;
+            })
+        })
+    })
+
 
     function moveCamera(){
         currentPos[0] = currentPos[0] + (mousePos[0] - currentPos[0])*0.2;
@@ -67,48 +92,11 @@ html {
         requestAnimationFrame(moveCamera);
     }
 
-    anim.addEventListener('DOMLoaded', function(){
-
-        moveCamera();
-
-        window.addEventListener('mousemove', function(ev){
-
-            mouseCoords.x = ev.clientX || ev.pageX;
-            mouseCoords.y = ev.clientY || ev.pageY;
-            theta = Math.atan2(
-                windowH/2 - mouseCoords.y,
-                windowW/2 - mouseCoords.x
-            );
-
-            dist = 2 * Math.sqrt(Math.pow(mouseCoords.x - windowW/2, 2) + Math.pow(mouseCoords.y - windowH/2, 2));
-            mousePos[0] = 960 + Math.cos(theta)*dist;
-            mousePos[1] = 540 + Math.sin(theta)*dist;
-        })
-    })
-
-    var windowW, windowH, dist;
-    var mouseCoords = {
-        x:0,
-        y:0
-    }
     function calculateSize(){
         windowW = window.innerWidth;
         windowH = window.innerHeight;
     }
 
     calculateSize();
-
-    function readTextFile(file, callback) {
-        var rawFile = new XMLHttpRequest();
-        rawFile.overrideMimeType("application/json");
-        rawFile.open("GET", file, true);
-        rawFile.onreadystatechange = function() {
-            if (rawFile.readyState === 4 && rawFile.status == "200") {
-                callback(rawFile.responseText);
-            }
-        }
-        rawFile.send(null);
-    }
-
 </script>
 </html>
