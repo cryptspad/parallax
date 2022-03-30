@@ -23,11 +23,10 @@
     margin: auto;
   }
   </style>
-  <body>
+  <body onload="init();">
     <div id="bodymovin"></div>
   </body>
   <script>
-      var animationData = null;
       var anim;
       var windowW, windowH, dist;
       var mouseCoords = {
@@ -37,24 +36,26 @@
       var currentLayerNum = -1;
       var currentPos = [960, 540, -2666.667];
       var mousePos = [960, 540, -2666.667];
-      var container = document.getElementById('bodymovin')
-      axios({
-          url: 'https://parallax.cryptspad.io/gztest.json.gz',
-          method: 'GET',
-          responseType: 'blob'
-      })
-      .then((response) => {
-          gzanimationData = response.data
-          gzanimationData.arrayBuffer()
-          .then(buf => {
-            animationData = JSON.parse(pako.ungzip(new Uint8Array(buf), { to: 'string' }))
-            initAnimation()
-          })
-      })
+      function init() {
+        axios({
+            url: 'https://parallax.cryptspad.io/gztest.json.gz',
+            method: 'GET',
+            responseType: 'blob'
+        })
+        .then((response) => {
+            gzanimationData = response.data
+            gzanimationData.arrayBuffer()
+            .then(buf => {
+              var animData = JSON.parse(pako.ungzip(new Uint8Array(buf), { to: 'string' }))
+              initAnimation(animData)
+            })
+        })
+        calculateSize();
+      }
 
-      function initAnimation() {
+      function initAnimation(animationData) {
         anim = bodymovin.loadAnimation({
-            container,
+            container: document.getElementById('bodymovin'),
             renderer: 'html',
             loop: true,
             autoplay: true,
@@ -97,7 +98,5 @@
           windowW = window.innerWidth;
           windowH = window.innerHeight;
       }
-
-      calculateSize();
   </script>
 </html>
