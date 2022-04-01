@@ -82,15 +82,19 @@
         })
       }
       function moveCamera(){
-          currentPos[0] = currentPos[0] + (mousePos[0] - currentPos[0])*0.125;
-          currentPos[1] = currentPos[1] + (mousePos[1] - currentPos[1])*0.125;
+          currentPos[0] = currentPos[0] + (mousePos[0] - currentPos[0]) * 0.025;
+          currentPos[1] = currentPos[1] + (mousePos[1] - currentPos[1]) * 0.025;
 
           if (currentPos[0] > 1250) {
             currentPos[0] = 1250
           }
-          if (currentPos[0] < 700){
-            currentPos[0] = 700
+          if (currentPos[0] < 750){
+            currentPos[0] = 750
           }
+          if (currentPos[1] < 350){
+            currentPos[1] = 350
+          }
+
           anim.animationData.layers[0].ks.p.k[0].s[0] = currentPos[0];
           anim.animationData.layers[0].ks.p.k[0].e[0] = currentPos[0];
           anim.animationData.layers[0].ks.p.k[0].s[1] = currentPos[1];
